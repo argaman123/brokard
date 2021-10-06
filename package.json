@@ -1,0 +1,34 @@
+{
+  "name": "brokard",
+  "version": "0.1.0",
+  "private": true,
+  "email":"argaman48@gmail.com",
+  "homepage":"",
+  "author": "John Doe <john@doe.com>",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "start": "node server/app.js",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
+  },
+  "main": "background.js",
+  "dependencies": {
+    "core-js": "^3.18.1",
+    "vue": "^3.2.19"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/compiler-sfc": "^3.2.19",
+    "electron": "^13.5.1",
+    "electron-devtools-installer": "^3.1.0",
+    "node-sass": "^6.0.1",
+    "sass-loader": "^10.2.0",
+    "socket.io-client": "^4.2.0",
+    "vue-cli-plugin-electron-builder": "~2.1.1",
+    "webpack": "^4.46.0"
+  }
+}
