@@ -7,7 +7,7 @@
   </div>
   <div id="container" :class="[currentColor]">
     <div id="top-bar">
-      <div id="currentTurn">It is <span id="color" :class="[currentColor]">{{ (currentName || "no one") + "'s" }}</span> turn!</div>
+      <div id="currentTurn"><span id="color" :class="[currentColor]">{{ (currentName || "no one") + "'s" }}</span><br />turn!</div>
       <transition name="card" mode="out-in">
         <div id="cards" :key="cardsLeft">{{cardsLeft}}</div>
       </transition>
@@ -43,7 +43,7 @@ export default {
         return "constant"
     }
 
-    const socket = Socket("http://77.125.166.227:25123")
+    const socket = Socket("http://77.125.166.73:25123")
     socket.on("init", (data) => {
       stocks.value = data.stocks
       currentColor.value = data.color
@@ -73,7 +73,7 @@ html, body {
 
 body {
   font-family: 'SF', serif;
-  overflow: hidden;
+  //overflow: hidden;
 }
 
 
@@ -112,7 +112,6 @@ body {
   transform: translateY(-50%);
   opacity: 0;
 }
-
 .card-leave-to {
   transform: translateY(-50%);
   opacity: 0;
@@ -152,6 +151,11 @@ body {
     background: $bright-blue;
     color: white
   }
+  &.turquoise {
+    background: $bright-turquoise;
+    color: white;
+
+  }
 }
 
 @keyframes moveright {
@@ -165,26 +169,18 @@ body {
 
 #container {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row-reverse;
+  justify-content: space-between;
   align-items: center;
   background: url("~@/assets/drawing.svg");
   background-size: 30%;
   animation: moveright 50s linear infinite;
   #top-bar {
-    width: 90%;
-    height: 10vh;
+    width: 35vw;
     display: flex;
-    flex-direction: row;
+    flex-direction: column-reverse;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10vh;
-    margin-bottom: 10vh;
-    #currentTurn {
-      font-size: 8vh;
-      color: white;
-      font-family: 'SFBold', serif;
-    }
 
     #cards {
       width: 23vh;
@@ -199,31 +195,39 @@ body {
       background: url("~@/assets/Card-back.svg") no-repeat;
       background-size: 23vh 23vh;
       box-shadow: 1vh 1vh 0 $black;
-      color: white
+      color: white;
+      margin-bottom: 10vh;
     }
-
-    #color {
-      padding: 2vh 3vh;
-      border-radius: 10vh;
-      transition: background-color 0.3s linear;
-      &.yellow {
-        background: $bright-yellow;
+    #currentTurn {
+      font-size: 8vh;
+      color: white;
+      font-family: 'SFBold', serif;
+      line-height: 1.8;
+      text-align: center;
+      #color {
+        padding: 2vh 3vh;
+        border-radius: 10vh;
+        transition: background-color 0.3s linear;
+        &.yellow {
+          background: $bright-yellow;
+        }
+        &.blue {
+          background: $bright-blue;
+        }
+        &.turquoise {
+          background: $bright-turquoise;
+        }
       }
-
-      &.blue {
-        background: $bright-blue;
-      }
-
     }
   }
 
   #stockContainer {
     display: flex;
-    width: 100vw;
-    height: 50vh;
-    justify-content: space-around;
-    flex-direction: row;
-    margin-bottom: 10vh;
+    width: 65vw;
+    height: 100%;
+    justify-content: space-evenly;
+    flex-direction: column;
+    align-items: center;
   }
 }
 </style>

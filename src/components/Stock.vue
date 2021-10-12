@@ -1,23 +1,33 @@
 <template>
   <div id="stock">
-    <transition name="coin">
-      <div :key="tokens.yellow" v-if="tokens.yellow > 0" class="token one">{{ tokens.yellow }}</div>
-    </transition>
-    <div id="container" :class="[status]">
-      <div id="top">
-        <img id="icon" :src="require('@/assets/'+type+'.svg')" alt="">
-        <transition name="number" mode="out-in">
-          <div id="cost" :key="cost">
-            <div>{{ cost }}$</div>
-          </div>
-        </transition>
-      </div>
-      <canvas ref="graphRef" id="graph"></canvas>
-      <div id="sum">Total: {{ sum }}$</div>
+    <div class="tokens">
+      <transition name="coin">
+        <div :key="tokens.yellow" v-if="tokens.yellow > 0" class="token one">{{ tokens.yellow }}</div>
+      </transition>
+      <transition name="coin">
+        <div :key="tokens.blue" v-if="tokens.blue > 0" class="token two">{{ tokens.blue }}</div>
+      </transition>
+      <transition name="coin">
+        <div :key="tokens.turquoise" v-if="tokens.turquoise > 0" class="token three">{{ tokens.turquoise }}</div>
+      </transition>
     </div>
-    <transition name="coin">
-      <div :key="tokens.blue" v-if="tokens.blue > 0" class="token two">{{ tokens.blue }}</div>
-    </transition>  </div>
+    <div class="container" :class="[status]">
+      <div id="top">
+        <div class="topSection">
+          <img id="icon" :src="require('@/assets/'+type+'.svg')" alt="">
+          <transition name="number" mode="out-in">
+            <div id="cost" :key="cost">
+              <div>{{ cost }}$</div>
+            </div>
+          </transition>
+        </div>
+        <div id="sum">Total: {{ sum }}$</div>
+      </div>
+      <div ref="graphContainerRef" id="graphContainer">
+        <canvas ref="graphRef" id="graph"></canvas>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -31,11 +41,11 @@ export default {
       // INIT
       let graph = graphRef.value
       let c = graph.getContext('2d');
-      graph.width = graph.clientWidth
-      graph.height = graph.clientHeight
+      graph.width = graphContainerRef.value.clientWidth
+      graph.height = graphContainerRef.value.clientHeight
       c.clearRect(0, 0, graph.width, graph.height)
-      const thickness = graph.height / 10
-      const fontSize = 1.2 * thickness
+      const thickness = graph.height / 20
+      const fontSize = 2 * thickness
 
       // CONTAINER INIT
       const padding = thickness / 2
@@ -47,12 +57,12 @@ export default {
       if (minY === maxY) {
         maxY += 1
         minY -= 1
-        data = [data[0], data[0]]
+        //data = [data[0], data[0]]
       }
-      const partsY = (availableHeight - fontSize * 2) / (maxY - minY + 1)
-      const partsX = availableWidth / (data.length - 1)
-      const getXPixel = (i) => padding + partsX * i
-      const getYPixel = (val) => padding + partsY * (maxY - val)
+      const partsY = (availableHeight - fontSize * 2) / 15 //(maxY-minY)
+      const partsX = availableWidth / 10
+      const getYPixel = (val) => padding + partsY * (/*maxY*/15 - val)
+      const getXPixel = (i) => padding + partsX * (i + 10 - data.length + 1)
 
       // GRAPH STYLE
       c.lineWidth = thickness
@@ -83,17 +93,17 @@ export default {
       // DRAWING THE GRAPH LINE
       data.forEach((pt, i) => c.lineTo(getXPixel(i), getYPixel(data[i])));
       c.stroke();
-      c.lineTo(availableWidth + 2 * padding, getYPixel(data[data.length - 1]))
+      c.lineTo(getXPixel(data.length - 1) + padding, getYPixel(data[data.length - 1]))
 
       // DRAWING THE GRAPH FILL
       if (props.status === 'up') {
-        c.lineTo(availableWidth + 2 * padding, availableHeight + 2 * padding); // almost bottom-right
-        c.lineTo(0, availableHeight + 2 * padding); // almost bottom-left
+        c.lineTo(getXPixel(data.length - 1) + padding, availableHeight + 2 * padding); // almost bottom-right
+        c.lineTo(getXPixel(0) - padding, availableHeight + 2 * padding); // almost bottom-left
       } else {
-        c.lineTo(availableWidth + 2 * padding, 0); // top-right
-        c.lineTo(0, 0); // top-left
+        c.lineTo(getXPixel(data.length - 1) + padding, 0); // top-right
+        c.lineTo(getXPixel(0) - padding, 0); // top-left
       }
-      c.lineTo(0, getYPixel(data[0]))
+      c.lineTo(getXPixel(0) - padding, getYPixel(data[0]))
       c.globalCompositeOperation = "destination-over";
       c.fill();
       c.globalCompositeOperation = "source-over";
@@ -104,14 +114,16 @@ export default {
       c.font = fontSize + 'px arial';
       c.textBaseline = "middle"
       c.textAlign = "center"
-      const getXFontPixel = (val) => padding + fontSize / 4 + (availableWidth - fontSize / 2) / (data.length - 1) * val
+      //const getXFontPixel = (val) => padding + fontSize / 4 + (availableWidth - fontSize / 2) / (data.length - 1) * val
+      const getXFontPixel = (i) => padding + fontSize / 4 + (availableWidth - fontSize / 2) / 10 * (i + 10 - data.length + 1)
       for (let i = 0; i < originalData.length; i++) {
-        c.fillText(originalData[i], getXFontPixel(i), availableHeight - thickness / 2);
+        c.fillText(originalData[i], getXFontPixel(i), availableHeight);
       }
 
     }
 
     const graphRef = ref(null)
+    const graphContainerRef = ref(null)
     const sum = computed(() => {
       let s = 0
       for (const num in props.history) s += props.history[num]
@@ -119,10 +131,10 @@ export default {
     })
 
     const prepareHistory = (history) => {
-      if (history.length < 6)
+      if (history.length < 10)
         return history
       else
-        return history.slice(history.length - 6, history.length)
+        return history.slice(history.length - 10, history.length)
     }
 
     const renderGraph = () => updateGraph(prepareHistory(props.history))
@@ -141,34 +153,12 @@ export default {
 
     const cost = computed(() => props.history[props.history.length - 1])
 
-    return {graphRef, cost, sum, prepareHistory}
+    return {graphRef, graphContainerRef, cost, sum, prepareHistory}
   }
 }
 </script>
 
 <style scoped lang="scss">
-/*@keyframes drop {
-  0% {
-    transform: scale(4);
-    opacity: 0;
-  }
-  60%{
-    transform: scale(1) rotateY(0);
-    opacity: 1;
-  }
-  65% {
-  transform: scale(1.4) rotateY(70deg);
-  }
-  80% {
-    transform: scale(2) rotateY(180deg);
-  }!*
-  75% {
-    transform: scale(1.45) rotateY(220deg);
-  }*!
-  100% {
-    transform: scale(1) rotateY(360deg);
-  }
-}*/
 @keyframes drop {
   0% {
     transform: rotateY(-90deg) scale(1.5);
@@ -197,9 +187,11 @@ export default {
 .number-enter-active {
   transition: all 0.5s linear;
 }
+
 .number-leave-active {
   transition: all 0.3s linear;
 }
+
 .number-enter-from {
   transform: translateY(-100%);
   opacity: 0;
@@ -212,49 +204,52 @@ export default {
 
 #stock {
   position: relative;
-  display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: row;
-  height: 60vh;
-  width: 60vh;
+  width: 100%;
+  height: 18vh;
+  display: flex;
+  flex-direction: row-reverse;
+  .tokens {
+    height: 18vh;
+    width: 5vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    .token {
+      border-radius: 50%;
+      font-size: 2.5vw;
+      width: 3vw;
+      height: 3vw;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 3vw;
+      font-family: 'SFBold', serif;
+      color: white;
 
-  .token {
-    border-radius: 50%;
-    font-size: 6vh;
-    width: 10vh;
-    height: 10vh;
-    background: aqua;
-    position: absolute;
-    text-align: center;
-    vertical-align: middle;
-    line-height: 10vh;
-    font-family: 'SFBold', serif;
-    color: white;
+      &.one {
+        background: $bright-yellow;
+      }
 
-    &.one {
-      background: $bright-yellow;
-      left: 1vh;
-      top: 1vh;
-    }
+      &.two {
+        background: $bright-blue;
+      }
 
-    &.two {
-      background: $bright-blue;
-      right: 1vh;
-      bottom: 1vh;
+      &.three {
+        background: $bright-turquoise;
+      }
     }
   }
 
-  #container {
+  .container {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: space-around;
-    border-radius: 20%;
-    padding: 7%;
-    height: 44vh;
-    width: 44vh;
+    flex-direction: row-reverse;
+    justify-content: space-between;
     transition: background-color 1s ease;
+    border-radius: 3vw;
+    padding: 2vh;
+    height: 18vh;
 
     &.up {
       background: $green;
@@ -273,33 +268,42 @@ export default {
 
     #top {
       display: flex;
-      flex-direction: row;
-      align-items: center;
+      flex-direction: column;
       justify-content: space-between;
-      height: 24vh;
+      height: 100%;
+      width: 14vw;
 
-      #cost {
-        > div {
+      .topSection {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+
+        #cost {
+          font-size: 8vh;
+          text-align: right;
         }
-        font-size: 13vh;
+
+        #icon {
+          height: 8vh;
+        }
       }
 
-      #icon {
-        width: 16vh;
-        height: 16vh;
+      #sum {
+        text-align: center;
+        font-size: 1.5vw;
+        width: 100%;
+        font-family: 'SFBold', serif;
       }
     }
 
-    #graph {
-      //width: 70%;
-      height: 24vh;
+    #graphContainer {
+      width: 40vw;
+      margin-right: 2vw;
+      height: 18vh;
     }
 
-    #sum {
-      text-align: center;
-      font-size: 4vh;
-      font-family: 'SFBold', serif;
-    }
+
   }
 }
 </style>
